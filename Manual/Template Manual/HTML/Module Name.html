@@ -27,8 +27,9 @@
         margin-bottom: 0em;
       }
 
-      td {
+      table {
         text-align: center;
+        font-size: 14px;
       }
 
       .red {
@@ -215,6 +216,10 @@
               <td class="orange"></td>
             </tr>
           </table>
+          <p>
+            Once you found your starting cell, use each character's numeric
+            position from the serial number (A=1, Z=26) mod 6 to get 6 numbers.
+          </p>
         </div>
         <div class="page-footer relative-footer">1</div>
       </div>
@@ -227,15 +232,73 @@
         </div>
         <div class="page-content">
           <p>
-            Once you found your starting cell, use each chacater's numeric
-            position from the serial number (A=1, Z=26) mod 6 to get 6 numbers.
-          </p>
-
-          <p>
             For each face, find the modifier based on the table below and apply
-            it to the corresponding number gotten above. U=1st, L=2nd, F=3rd,
+            it to the corresponding number obtained above. U=1st, L=2nd, F=3rd,
             R=4th, D=5th.
           </p>
+          <table>
+            <tr>
+              <th>Face Color</th>
+              <th>Up</th>
+              <th>Left</th>
+              <th>Front</th>
+              <th>Right</th>
+              <th>Down</th>
+            </tr>
+            <tr>
+              <td>Green</td>
+              <td>+ AA Batteries</td>
+              <td>+ Stereo RCA Ports</td>
+              <td>+ Lit Indicators</td>
+              <td>+ Digits in Serial Number</td>
+              <td>- Port Plates</td>
+            </tr>
+
+            <tr>
+              <td>Blue</td>
+              <td>+ D Batteries</td>
+              <td>+ Serial Ports</td>
+              <td>- Unlit Indicators</td>
+              <td>+ Constants in Serial Number</td>
+              <td>+ 4</td>
+            </tr>
+
+            <tr>
+              <td>Red</td>
+              <td>+ Batteries</td>
+              <td>+ DVI-D Ports</td>
+              <td>- Lit Indicators</td>
+              <td>+ Letters in Serial Number</td>
+              <td>+ Port Plates</td>
+            </tr>
+
+            <tr>
+              <td>White</td>
+              <td>- AA Batteries</td>
+              <td>+ PS/2 Ports</td>
+              <td>+ Unlit Indicators</td>
+              <td>- Letters in Serial Number</td>
+              <td>* Port Plates</td>
+            </tr>
+
+            <tr>
+              <td>Yellow</td>
+              <td>- D Batteries</td>
+              <td>+ Parallel Ports</td>
+              <td>* Unlit Indicators</td>
+              <td>- Digits in Serial Number</td>
+              <td>* 2</td>
+            </tr>
+
+            <tr>
+              <td>Orange</td>
+              <td>- Batteries</td>
+              <td>+ RJ-45 Ports</td>
+              <td>* Lit Indicators</td>
+              <td>+ Vowels in Serial Number</td>
+              <td>+ 8</td>
+            </tr>
+          </table>
           <p>
             Take your new set of numbers numbers mod 6 to get the 6 moves to
             perform. Press the yellow button to start the run. You will have 10
