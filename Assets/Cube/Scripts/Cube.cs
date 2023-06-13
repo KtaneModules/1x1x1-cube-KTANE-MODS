@@ -81,6 +81,7 @@ public class Cube : MonoBehaviour
 
         Quaternion initialRotation = cube.transform.rotation;
 
+
         Vector3 axis; 
         switch (rotation)
         {
@@ -104,17 +105,22 @@ public class Cube : MonoBehaviour
                 break;
         }
 
-        float timer = 0f;
+        axis *= 90;
+        Vector3Int finalRotation = new Vector3Int((int)initialRotation.x, (int)initialRotation.y, (int)initialRotation.z) + new Vector3Int((int)axis.x, (int)axis.y, (int)axis.z);
+        Debug.Log("Initial rotation: " + initialRotation);
+        Debug.Log("Final rotation: " + finalRotation);
 
+        float timer = 0f;
         do
         {
-            //say that again
-            cube.transform.rotation = initialRotation * Quaternion.AngleAxis(90 * Math.Min(timer / maxTime, 1), axis);
-            timer += Time.deltaTime;
             yield return null;
+            cube.transform.rotation = initialRotation;
+            cube.transform.Rotate(axis * Math.Min(timer/maxTime, 1));
+            timer += Time.deltaTime;
         } while (timer < maxTime);
 
         rotating = false;
+        cube.transform.eulerAngles = finalRotation;
     }
 
     void GetComponents()
@@ -126,8 +132,6 @@ public class Cube : MonoBehaviour
         rightButton = transform.Find("Right Button").GetComponent<KMSelectable>();
         clockButton = transform.Find("Clock Button").GetComponent<KMSelectable>();
         counterButton = transform.Find("Counter Button").GetComponent<KMSelectable>();
-
-
     }
 
 #pragma warning disable 414
