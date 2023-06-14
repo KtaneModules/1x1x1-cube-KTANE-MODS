@@ -169,33 +169,45 @@ public class Cube : MonoBehaviour
 
         const float maxTime = .5f; //how much time the rotation should take 
 
-        Quaternion initialRotation = cube.transform.rotation;
-        Vector3Int initialRotationVector = new Vector3Int((int)initialRotation.x, (int)initialRotation.y, (int)initialRotation.z);
-
-
         Vector3 axis; 
         switch (rotation)
         {
             case Rotation.Up:
-                axis = cube.transform.right;
+                axis = Vector3.right;
                 break;
             case Rotation.Down:
-                axis = -cube.transform.right;
+                axis = -Vector3.right;
                 break;
             case Rotation.Right:
-                axis = cube.transform.forward;
+                axis = -Vector3.forward;
                 break;
             case Rotation.Left:
-                axis = -cube.transform.forward;
+                axis = Vector3.forward;
                 break;
             case Rotation.Clock:
-                axis = cube.transform.up;
+                axis = Vector3.up;
                 break;
             default: //counter
-                axis = -cube.transform.up;
+                axis = -Vector3.up;
                 break;
         }
 
+        axis *= 90;
+
+        var fromAngle = transform.rotation;
+        var toAngle = Quaternion.Euler(cube.transform.eulerAngles + axis);
+        Debug.Log($"Rotating to angle: {toAngle}");
+
+        for (var t = 0f; t < 1; t += Time.deltaTime / maxTime)
+        {
+            cube.transform.rotation = Quaternion.Lerp(fromAngle, toAngle, t);
+            yield return null;
+        }
+
+        //cube.transform.eulerAngles = FixRotation(cube.transform.eulerAngles);
+        //Debug.Log(cube.transform.eulerAngles);
+
+        /*
         axis *= 90;
 
         Vector3Int axisInt = new Vector3Int((int)axis.x, (int)axis.y, (int)axis.z);
@@ -213,8 +225,10 @@ public class Cube : MonoBehaviour
             cube.transform.Rotate(axis * Math.Min(timer/maxTime, maxTime));
             timer += Time.deltaTime;
         } while (timer < maxTime);
-
         cube.transform.eulerAngles = finalRotation;
+
+        */
+
 
         if (timerStarted)
         { 
@@ -222,6 +236,44 @@ public class Cube : MonoBehaviour
         }
 
         rotating = false;
+    }
+
+    /// <summary>
+    /// helper method used to round each coponent to the nearest 90 degrees
+    /// </summary>
+    /// <returns></returns>
+    Vector3 FixRotation(Vector3 initialRotation)
+    {
+        return new Vector3(FixComponent(initialRotation.x), FixComponent(initialRotation.y), FixComponent(initialRotation.z));
+    }
+
+    int FixComponent(float value)
+    {
+
+
+        List<KeyValuePair<int, float>> d = new List<KeyValuePair<int, float>>()
+        {
+            new KeyValuePair<int, float>(0, Math.Abs(value - 0)),
+            new KeyValuePair<int, float>(90, Math.Abs(value - 90)),
+            new KeyValuePair<int, float>(180, Math.Abs(value - 180)),
+            new KeyValuePair<int, float>(270, Math.Abs(value - 270)),
+        };
+
+        int index = 0;
+        float smallest = d[0].Value;
+
+        for (int i = 1; i < 4; i++)
+        {
+            if (smallest > d[i].Value)
+            {
+                index = i;
+                smallest = d[i].Value;
+            }
+        }
+
+
+
+        return d[index].Key;
     }
 
     void HandleInput(Rotation rotation)
@@ -452,32 +504,32 @@ public class Cube : MonoBehaviour
         else if (leftFace == b)
         {
             newNum = oldNum + Bomb.GetPorts().Where(x => x == "Serial").Count();
-            log += "green. Adding Serial ports.";
+            log += "blue. Adding Serial ports.";
 
         }
 
         else if (leftFace == r)
         {
             newNum = oldNum + Bomb.GetPorts().Where(x => x == "DVI-D").Count();
-            log += "green. Adding DVI-D ports.";
+            log += "red. Adding DVI-D ports.";
         }
 
         else if (leftFace == w)
         {
             newNum = oldNum + Bomb.GetPorts().Where(x => x == "PS/2").Count();
-            log += "green. Adding PS/2 ports.";
+            log += "white. Adding PS/2 ports.";
         }
 
         else if (leftFace == y)
         {
             newNum = oldNum + Bomb.GetPorts().Where(x => x == "Parallel").Count();
-            log += "green. Adding Parallel ports.";
+            log += "yellow. Adding Parallel ports.";
         }
 
         else
         { 
-            newNum = oldNum + Bomb.GetPorts().Where(x => x == "RJ-45").Count(); //orange
-            log += "green. Adding RJ-45 ports.";
+            newNum = oldNum + Bomb.GetPorts().Where(x => x == "RJ-45").Count();
+            log += "orange. Adding RJ-45 ports.";
         }
 
         Logging(log);
@@ -498,31 +550,31 @@ public class Cube : MonoBehaviour
         else if (frontFace == b)
         {
             newNum = oldNum + unlitIndicatorNum;
-            log += "green. Adding unlit indicators.";
+            log += "blue. Adding unlit indicators.";
         }
 
         else if (frontFace == r)
         {
             newNum = oldNum - litIndicatorNum;
-            log += "green. Subtracting lit indicators.";
+            log += "red. Subtracting lit indicators.";
         }
 
         else if (frontFace == w)
         {
             newNum = oldNum + unlitIndicatorNum;
-            log += "green. Subtracting unlit indicators.";
+            log += "white. Subtracting unlit indicators.";
         }
 
         else if (frontFace == y)
         {
             newNum = oldNum * unlitIndicatorNum;
-            log += "green. Mulitplying unlit indicators.";
+            log += "yellow. Mulitplying unlit indicators.";
         }
 
         else
         {
-            newNum = oldNum * litIndicatorNum; ; //orange
-            log += "green. Mulitplying unlit indicators.";
+            newNum = oldNum * litIndicatorNum; ;
+            log += "orange. Mulitplying unlit indicators.";
         }
 
 
@@ -583,25 +635,25 @@ public class Cube : MonoBehaviour
             log += "green. Subtracting port plates";
         }
 
-        if (bottomFace == b)
+        else if (bottomFace == b)
         {
             newNum = oldNum + 4;
             log += "blue. Adding 4.";
         }
 
-        if (bottomFace == r)
+        else if(bottomFace == r)
         {
             newNum = oldNum - portPlates;
             log += "red. Subtracting port plates.";
         }
 
-        if (bottomFace == w)
+        else if(bottomFace == w)
         {
             newNum = oldNum * portPlates;
             log += "white. Multiplying port plates.";
         }
 
-        if (bottomFace == y)
+        else if(bottomFace == y)
         {
             newNum = oldNum * 2;
             log += "yellow. Multiplying 2.";
