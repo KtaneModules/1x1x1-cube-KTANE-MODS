@@ -16,6 +16,10 @@ public class Cube : MonoBehaviour
 
     private KMSelectable upButton, leftButton, rightButton, downButton, clockButton, counterButton, startButton;
 
+    private const float maxTime = 10f;
+    private float currentTime;
+    private TextMesh timerText;
+
     private MeshRenderer upSticker, leftSticker, frontSticker, rightSticker, downSticker, backSticker;
 
     [SerializeField]
@@ -38,10 +42,17 @@ public class Cube : MonoBehaviour
 
     private Color topFace, leftFace, frontFace, rightFace, bottomFace, backFace;
 
+    private int aaBatteryCount, batteries, dBatteryCount, litIndicatorNum, unlitIndicatorNum, digitsInSerialNum, constantsInSerialNum, lettersInSerialNum, portPlates;
+
+    private string serialNumber;
+
+    private List<string> answer;
 
     static int ModuleIdCounter = 1;
     int ModuleId;
     private bool ModuleSolved;
+
+    private bool timerStarted = false;
 
 
 
@@ -57,6 +68,9 @@ public class Cube : MonoBehaviour
     void Awake()
     {
         ModuleId = ModuleIdCounter++;
+
+        
+
 
         GetComponents();
 
@@ -92,27 +106,38 @@ public class Cube : MonoBehaviour
         rightButton.OnInteract += delegate () { Debug.Log("Pressed right"); StartCoroutine(Rotate(Rotation.Right)); return false; };
 
         clockButton.OnInteract += delegate () { Debug.Log("Pressed right"); StartCoroutine(Rotate(Rotation.Clock)); return false; };
-        counterButton.OnInteract += delegate () { Debug.Log("Pressed right"); StartCoroutine(Rotate(Rotation.Counter)); return false; }; 
-        /*
-        foreach (KMSelectable object in keypad) {
-            object.OnInteract += delegate () { keypadPress(object); return false; };
-        }
-        */
-
-        //button.OnInteract += delegate () { buttonPress(); return false; };
-
-
-
+        counterButton.OnInteract += delegate () { Debug.Log("Pressed right"); StartCoroutine(Rotate(Rotation.Counter)); return false; };
+        startButton.OnInteract += delegate () { timerStarted = true;  return false; };
     }
 
     void Start()
     {
-        SetCube();
+        SetCube(); 
+        GetEdgework();
+        GetAnswer();
+        ResetModule();
+    }
+
+    void ResetModule()
+    {
+        currentTime = maxTime;
     }
 
     void Update()
     {
+        if (timerStarted)
+        {
+            currentTime -= Time.deltaTime;
 
+            Debug.Log(currentTime);
+
+            timerText.text = currentTime.ToString("00.0");
+
+            if (currentTime <= 0)
+            {
+                timerStarted = false;
+            }
+        }
     }
 
     IEnumerator Rotate(Rotation rotation)
@@ -182,6 +207,9 @@ public class Cube : MonoBehaviour
         rightButton = transform.Find("Right Button").GetComponent<KMSelectable>();
         clockButton = transform.Find("Clock Button").GetComponent<KMSelectable>();
         counterButton = transform.Find("Counter Button").GetComponent<KMSelectable>();
+        startButton = transform.Find("Start Button").GetComponent<KMSelectable>();
+
+        timerText = transform.Find("Timer").transform.Find("Text").GetComponent<TextMesh>();
 
         upSticker = cube.transform.Find("Up Sticker").GetComponent<MeshRenderer>();
         leftSticker = cube.transform.Find("Left Sticker").GetComponent<MeshRenderer>();
@@ -189,6 +217,24 @@ public class Cube : MonoBehaviour
         rightSticker = cube.transform.Find("Right Sticker").GetComponent<MeshRenderer>();
         backSticker = cube.transform.Find("Back Sticker").GetComponent<MeshRenderer>();
         downSticker = cube.transform.Find("Down Sticker").GetComponent<MeshRenderer>();
+    }
+
+    void GetEdgework()
+    {
+        serialNumber = Bomb.GetSerialNumber().ToUpper();
+
+        batteries = Bomb.GetBatteryCount();
+        aaBatteryCount = GetAABatteryCount();
+        dBatteryCount = batteries - aaBatteryCount;
+
+        litIndicatorNum = Bomb.GetOnIndicators().Count();
+        unlitIndicatorNum = Bomb.GetOffIndicators().Count();
+
+        portPlates = Bomb.GetPortPlateCount();
+
+        digitsInSerialNum = serialNumber.Where(c => Char.IsDigit(c)).Count();
+        lettersInSerialNum = serialNumber.Length - digitsInSerialNum;
+        constantsInSerialNum = serialNumber.Where(c => !IsVowel(c)).Count();
     }
 
     void SetCube()
@@ -203,6 +249,7 @@ public class Cube : MonoBehaviour
         rightFace = grid[row, (col + 1) % 10];
         bottomFace = grid[(row + 2) % 10, col];
 
+
         upSticker.material = colorDictionary[topFace];
         leftSticker.material = colorDictionary[leftFace];
         frontSticker.material = colorDictionary[frontFace];
@@ -210,28 +257,312 @@ public class Cube : MonoBehaviour
         downSticker.material = colorDictionary[bottomFace];
         backSticker.material = colorDictionary[backFace];
 
-        Logging($"Top color is {upSticker.material.name}");
-        Logging($"Left color is {leftSticker.material.name}");
-        Logging($"Front color is {frontSticker.material.name}");
-        Logging($"Right color is {rightSticker.material.name}");
-        Logging($"Down color is {downSticker.material.name}");
-        Logging($"Back color is {backSticker.material.name}");
-
         Logging($"Top Face is located in {row},{col} (row, col) index 0");
     }
 
     void GetAnswer()
     {
-        string serialNumber = Bomb.GetSerialNumber().ToUpper();
-
         List<int> nums = new List<int>();
 
         foreach (char c in serialNumber)
         {
             nums.Add(Char.IsDigit(c) ? c - 48 : c - 64);        
         }
+
+        nums[0] = GetTopNewNumber(nums[0]);
+        nums[1] = GetLeftNewNumber(nums[1]);
+        nums[2] = GetFrontNewNumber(nums[2]);
+        nums[3] = GetRightNewNumber(nums[3]);
+        nums[4] = GetBottomNewNumber(nums[4]);
+
+        string[] arr = nums.Select(x => "" + x.ToString()).ToArray();
+
+        Logging($"Modified numbers are {string.Join(", ", arr)}");
+
+        answer = new List<string>();
+
+        for (int i = 0; i < 6; i++)
+        {
+            int n = nums[i];
+
+            while (n < 0)
+            {
+                n += 6;
+            }
+
+            n %= 6;
+
+            switch (n)
+            {
+                case 0:
+                    answer.Add("U");
+                    break;
+                case 1:
+                    answer.Add("L");
+                    break;
+
+                case 2:
+                    answer.Add("R");
+                    break;
+
+                case 3:
+                    answer.Add("D");
+                    break;
+
+                case 4:
+                    answer.Add("C");
+                    break;
+
+                case 5:
+                    answer.Add("CC");
+                    break;
+            }
+        }
+
+        Logging($"Answer is {string.Join(", ", answer.ToArray())}");
     }
 
+    int GetTopNewNumber(int oldNum)
+    {
+        int newNum;
+        string log = "Top Face is ";
+        if (topFace == g)
+        {
+            newNum = oldNum + aaBatteryCount;
+            log += "green. Adding AA battery count.";
+        }
+
+        else if (topFace == b)
+        {
+            newNum = oldNum + dBatteryCount;
+            log += "blue. Adding D battery count.";
+        }
+
+        else if(topFace == r)
+        {
+            newNum = oldNum + batteries;
+            log += "red. Adding battery count.";
+        }
+
+        else if (topFace == w)
+        {
+            newNum = oldNum - aaBatteryCount;
+            log += "white. Subtracting AA battery count.";
+        }
+
+        else if(topFace == y)
+        {
+            newNum = oldNum - dBatteryCount;
+            log += "yellow. Subtracting D battery count.";
+        }
+
+        else
+        {
+            newNum = oldNum - batteries;
+            log += "oranage. Subtracting battery count.";
+        }
+
+        Logging(log);
+
+        return newNum;
+    }
+    int GetLeftNewNumber(int oldNum)
+    {
+        int newNum;
+        string log = "Left Face is ";
+
+        if (leftFace == g)
+        {
+            newNum = oldNum + Bomb.GetPorts().Where(x => x == "Stereo RCA").Count();
+            log += "green. Adding Stereo RCA ports.";
+        }
+
+        else if (leftFace == b)
+        {
+            newNum = oldNum + Bomb.GetPorts().Where(x => x == "Serial").Count();
+            log += "green. Adding Serial ports.";
+
+        }
+
+        else if (leftFace == r)
+        {
+            newNum = oldNum + Bomb.GetPorts().Where(x => x == "DVI-D").Count();
+            log += "green. Adding DVI-D ports.";
+        }
+
+        else if (leftFace == w)
+        {
+            newNum = oldNum + Bomb.GetPorts().Where(x => x == "PS/2").Count();
+            log += "green. Adding PS/2 ports.";
+        }
+
+        else if (leftFace == y)
+        {
+            newNum = oldNum + Bomb.GetPorts().Where(x => x == "Parallel").Count();
+            log += "green. Adding Parallel ports.";
+        }
+
+        else
+        { 
+            newNum = oldNum + Bomb.GetPorts().Where(x => x == "RJ-45").Count(); //orange
+            log += "green. Adding RJ-45 ports.";
+        }
+
+        Logging(log);
+
+        return newNum;
+    }
+    int GetFrontNewNumber(int oldNum)
+    {
+        int newNum;
+        string log = "Front Face is ";
+        if (frontFace == g)
+        {
+            newNum = oldNum + litIndicatorNum;
+            log += "green. Adding lit indicators.";
+
+        }
+
+        else if (frontFace == b)
+        {
+            newNum = oldNum + unlitIndicatorNum;
+            log += "green. Adding unlit indicators.";
+        }
+
+        else if (frontFace == r)
+        {
+            newNum = oldNum - litIndicatorNum;
+            log += "green. Subtracting lit indicators.";
+        }
+
+        else if (frontFace == w)
+        {
+            newNum = oldNum + unlitIndicatorNum;
+            log += "green. Subtracting unlit indicators.";
+        }
+
+        else if (frontFace == y)
+        {
+            newNum = oldNum * unlitIndicatorNum;
+            log += "green. Mulitplying unlit indicators.";
+        }
+
+        else
+        {
+            newNum = oldNum * litIndicatorNum; ; //orange
+            log += "green. Mulitplying unlit indicators.";
+        }
+
+
+        Logging(log);
+        return newNum;
+    }
+    int GetRightNewNumber(int oldNum)
+    {
+        int newNum;
+        string log = "Right Face is ";
+
+        if (rightFace == g)
+        {
+            newNum = oldNum + digitsInSerialNum;
+            log += "green. Adding digits in serial number.";
+        }
+
+        else if (rightFace == b)
+        {
+            newNum = oldNum + constantsInSerialNum;
+            log += "blue. Adding constants in serial number.";
+        }
+
+        else if (rightFace == r)
+        {
+            newNum = lettersInSerialNum;
+            log += "red. Adding letters in serial number.";
+        }
+
+        else if (rightFace == w)
+        {
+            newNum = oldNum - digitsInSerialNum;
+            log += "white. Subtracting digits in serial number.";
+        }
+
+        else if (rightFace == y)
+        {
+            newNum = oldNum - digitsInSerialNum;
+            log += "yellow. Subtracting digits in serial number.";
+        }
+
+        else
+        { 
+            newNum = lettersInSerialNum - constantsInSerialNum;
+            log += "orange. Adding vowels in serial number.";
+        }
+
+        Logging(log);
+        return newNum;
+    }
+    int GetBottomNewNumber(int oldNum)
+    {
+        int newNum;
+        string log = "Down Face is ";
+        if (bottomFace == g)
+        {
+            newNum = oldNum - portPlates;
+            log += "green. Subtracting port plates";
+        }
+
+        if (bottomFace == b)
+        {
+            newNum = oldNum + 4;
+            log += "blue. Adding 4.";
+        }
+
+        if (bottomFace == r)
+        {
+            newNum = oldNum - portPlates;
+            log += "red. Subtracting port plates.";
+        }
+
+        if (bottomFace == w)
+        {
+            newNum = oldNum * portPlates;
+            log += "white. Multiplying port plates.";
+        }
+
+        if (bottomFace == y)
+        {
+            newNum = oldNum * 2;
+            log += "yellow. Multiplying 2.";
+        }
+
+        else
+        {
+            newNum = oldNum + 8;
+            log += "orange. Adding 8.";
+        }
+
+        Logging(log);
+        return newNum;
+    }
+
+    int GetAABatteryCount()
+    {
+        int count = 0;
+        int tempBatteries = batteries;
+
+        while (tempBatteries > 2)
+        {
+            tempBatteries -= 2;
+            count++;
+        }
+
+        return count * 2;
+    }
+
+    bool IsVowel(char c)
+    {
+        return "AEIOU".IndexOf(c) > -1;
+    }
     void Logging(string log)
     {
         Debug.LogFormat($"[1x1x1 Rubik’s Cube #{ModuleId}] {log}");
