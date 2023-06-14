@@ -194,8 +194,12 @@ public class Cube : MonoBehaviour
 
         axis *= 90;
 
-        var fromAngle = transform.localRotation;
-        var toAngle = Quaternion.Euler(cube.transform.localEulerAngles + axis);
+        Quaternion fromAngle = cube.transform.localRotation;
+        Quaternion toAngle = cube.transform.localRotation * Quaternion.Euler(axis);
+
+
+        Quaternion intendedRotation = fromAngle * toAngle;
+
         Debug.Log($"Rotating to angle: {toAngle}");
 
         for (var t = 0f; t < 1; t += Time.deltaTime / maxTime)
