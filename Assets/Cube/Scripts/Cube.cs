@@ -163,7 +163,7 @@ public class Cube : MonoBehaviour
 
     IEnumerator Rotate(Rotation rotation)
     {
-        if (rotating || ModuleSolved)
+        if (ModuleSolved)
             yield break;
 
         rotating = true;
