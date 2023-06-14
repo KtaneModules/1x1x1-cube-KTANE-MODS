@@ -193,12 +193,8 @@ public class Cube : MonoBehaviour
 
     void SetCube()
     {
-        //row = Rnd.Range(0, 10);
-        //col = Rnd.Range(0, 10);
-
-        row = 9;
-        col = 0;
-
+        row = Rnd.Range(0, 10);
+        col = Rnd.Range(0, 10);
 
         topFace = grid[row, col];
         frontFace = grid[(row + 1) % 10, col];
@@ -222,9 +218,19 @@ public class Cube : MonoBehaviour
         Logging($"Back color is {backSticker.material.name}");
 
         Logging($"Top Face is located in {row},{col} (row, col) index 0");
-
     }
 
+    void GetAnswer()
+    {
+        string serialNumber = Bomb.GetSerialNumber().ToUpper();
+
+        List<int> nums = new List<int>();
+
+        foreach (char c in serialNumber)
+        {
+            nums.Add(Char.IsDigit(c) ? c - 48 : c - 64);        
+        }
+    }
 
     void Logging(string log)
     {
