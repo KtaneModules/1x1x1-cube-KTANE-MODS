@@ -56,6 +56,7 @@ public class Cube : MonoBehaviour
 
     private bool timerStarted = false;
 
+    private Quaternion currentRotation = Quaternion.identity;
 
 
     enum Rotation
@@ -195,43 +196,15 @@ public class Cube : MonoBehaviour
         axis *= 90;
 
         Quaternion fromAngle = cube.transform.localRotation;
-        Quaternion toAngle = Quaternion.Euler(axis) * cube.transform.localRotation;
-
-        Debug.Log($"Rotating to angle: {toAngle}");
+        currentRotation = Quaternion.Euler(axis) * currentRotation;
 
         for (var t = 0f; t < 1; t += Time.deltaTime / maxTime)
         {
-            cube.transform.localRotation = Quaternion.Lerp(fromAngle, toAngle, t);
+            cube.transform.localRotation = Quaternion.Lerp(fromAngle, currentRotation, t);
             yield return null;
         }
 
-        cube.transform.localRotation = toAngle;
-
-        //cube.transform.eulerAngles = FixRotation(cube.transform.eulerAngles);
-        //Debug.Log(cube.transform.eulerAngles);
-
-        /*
-        axis *= 90;
-
-        Vector3Int axisInt = new Vector3Int((int)axis.x, (int)axis.y, (int)axis.z);
-
-        Vector3Int finalRotation = initialRotationVector + axisInt;
-
-        Debug.Log("Initial rotation: " + initialRotationVector);
-        Debug.Log("Final rotation: " + finalRotation);
-
-        float timer = 0f;
-        do
-        {
-            yield return null;
-            cube.transform.rotation = initialRotation;
-            cube.transform.Rotate(axis * Math.Min(timer/maxTime, maxTime));
-            timer += Time.deltaTime;
-        } while (timer < maxTime);
-        cube.transform.eulerAngles = finalRotation;
-
-        */
-
+        cube.transform.localRotation = currentRotation;
 
         if (timerStarted)
         { 
