@@ -194,13 +194,13 @@ public class Cube : MonoBehaviour
 
         axis *= 90;
 
-        var fromAngle = transform.rotation;
+        var fromAngle = transform.localRotation;
         var toAngle = Quaternion.Euler(cube.transform.eulerAngles + axis);
         Debug.Log($"Rotating to angle: {toAngle}");
 
         for (var t = 0f; t < 1; t += Time.deltaTime / maxTime)
         {
-            cube.transform.rotation = Quaternion.Lerp(fromAngle, toAngle, t);
+            cube.transform.localRotation = Quaternion.Lerp(fromAngle, toAngle, t);
             yield return null;
         }
 
