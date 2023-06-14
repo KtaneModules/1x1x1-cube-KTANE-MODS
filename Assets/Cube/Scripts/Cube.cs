@@ -195,10 +195,7 @@ public class Cube : MonoBehaviour
         axis *= 90;
 
         Quaternion fromAngle = cube.transform.localRotation;
-        Quaternion toAngle = cube.transform.localRotation * Quaternion.Euler(axis);
-
-
-        Quaternion intendedRotation = fromAngle * toAngle;
+        Quaternion toAngle = Quaternion.Euler(axis) * cube.transform.localRotation;
 
         Debug.Log($"Rotating to angle: {toAngle}");
 
