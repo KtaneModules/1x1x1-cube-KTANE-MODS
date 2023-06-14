@@ -15,14 +15,34 @@ public class Cube : MonoBehaviour
     private GameObject cube;
 
     private KMSelectable upButton, leftButton, rightButton, downButton, clockButton, counterButton, startButton;
-    private GameObject upSticker, leftSticker, frontSticker, rightSticker, downSticker, backSticker;
+
+    private MeshRenderer upSticker, leftSticker, frontSticker, rightSticker, downSticker, backSticker;
+
+    [SerializeField]
+    private Material redMaterial, orangeMaterial, yellowMaterial, greenMaterial, blueMaterial, whiteMaterial;
+    private Color[,] grid;
+
+    private Dictionary<Color, Material> colorDictionary;
+
+    private Color r = Color.red;
+    private Color o = new Color(1, 1, .5f); //doesn't have to be exactly orange
+    private Color y = Color.yellow;
+    private Color g = Color.green;
+    private Color b = Color.blue;
+    private Color w = Color.white;
+
+    private bool rotating = false;
+
+    private int row;
+    private int col;
+
+    private Color topFace, leftFace, frontFace, rightFace, bottomFace, backFace;
+
 
     static int ModuleIdCounter = 1;
     int ModuleId;
     private bool ModuleSolved;
 
-
-    bool rotating = false;
 
 
     enum Rotation
@@ -39,6 +59,31 @@ public class Cube : MonoBehaviour
         ModuleId = ModuleIdCounter++;
 
         GetComponents();
+
+        grid = new Color[,]
+        {
+            { g, y, r, w, y, w, y, g, y, r},
+            { r, g, w, b, g, r, w, r, g, b},
+            { b, o, g, y, r, w, b, g, y, o},
+            { y, b, w, r, b, y, w, o, r, b},
+            { r, w, b, y, o, r, o, y, b, g},
+            { o, r, g, w, r, b, w, o, r, b},
+            { b, g, r, b, y, w, y, b, g, w},
+            { r, o, y, g, w, b, r, y, w, b},
+            { o, w, o, w, g, r, g, b, r, w},
+            { y, g, y, b, o, g, b, o, g, o},
+        };
+
+
+        colorDictionary = new Dictionary<Color, Material>()
+        {
+            [r] = redMaterial,
+            [o] = orangeMaterial,
+            [y] = yellowMaterial,
+            [g] = greenMaterial,
+            [b] = blueMaterial,
+            [w] = whiteMaterial,
+        };
 
         upButton.OnInteract += delegate () { Debug.Log("Pressed up"); StartCoroutine(Rotate(Rotation.Up)); return false; };
         downButton.OnInteract += delegate () { Debug.Log("Pressed up"); StartCoroutine(Rotate(Rotation.Down)); return false; };
@@ -62,7 +107,7 @@ public class Cube : MonoBehaviour
 
     void Start()
     {
-
+        SetCube();
     }
 
     void Update()
@@ -80,34 +125,39 @@ public class Cube : MonoBehaviour
         const float maxTime = 1f; //how much time the rotation should take 
 
         Quaternion initialRotation = cube.transform.rotation;
+        Vector3Int initialRotationVector = new Vector3Int((int)initialRotation.x, (int)initialRotation.y, (int)initialRotation.z);
 
 
         Vector3 axis; 
         switch (rotation)
         {
             case Rotation.Up:
-                axis = Vector3.right;
+                axis = cube.transform.right;
                 break;
             case Rotation.Down:
-                axis = Vector3.left;
+                axis = -cube.transform.right;
                 break;
             case Rotation.Right:
-                axis = Vector3.back;
+                axis = cube.transform.forward;
                 break;
             case Rotation.Left:
-                axis = Vector3.forward;
+                axis = -cube.transform.forward;
                 break;
             case Rotation.Clock:
-                axis = Vector3.up;
+                axis = cube.transform.up;
                 break;
             default: //counter
-                axis = Vector3.down;
+                axis = -cube.transform.up;
                 break;
         }
 
         axis *= 90;
-        Vector3Int finalRotation = new Vector3Int((int)initialRotation.x, (int)initialRotation.y, (int)initialRotation.z) + new Vector3Int((int)axis.x, (int)axis.y, (int)axis.z);
-        Debug.Log("Initial rotation: " + initialRotation);
+
+        Vector3Int axisInt = new Vector3Int((int)axis.x, (int)axis.y, (int)axis.z);
+
+        Vector3Int finalRotation = initialRotationVector + axisInt;
+
+        Debug.Log("Initial rotation: " + initialRotationVector);
         Debug.Log("Final rotation: " + finalRotation);
 
         float timer = 0f;
@@ -115,7 +165,7 @@ public class Cube : MonoBehaviour
         {
             yield return null;
             cube.transform.rotation = initialRotation;
-            cube.transform.Rotate(axis * Math.Min(timer/maxTime, 1));
+            cube.transform.Rotate(axis * Math.Min(timer/maxTime, maxTime));
             timer += Time.deltaTime;
         } while (timer < maxTime);
 
@@ -132,6 +182,53 @@ public class Cube : MonoBehaviour
         rightButton = transform.Find("Right Button").GetComponent<KMSelectable>();
         clockButton = transform.Find("Clock Button").GetComponent<KMSelectable>();
         counterButton = transform.Find("Counter Button").GetComponent<KMSelectable>();
+
+        upSticker = cube.transform.Find("Up Sticker").GetComponent<MeshRenderer>();
+        leftSticker = cube.transform.Find("Left Sticker").GetComponent<MeshRenderer>();
+        frontSticker = cube.transform.Find("Front Sticker").GetComponent<MeshRenderer>();
+        rightSticker = cube.transform.Find("Right Sticker").GetComponent<MeshRenderer>();
+        backSticker = cube.transform.Find("Back Sticker").GetComponent<MeshRenderer>();
+        downSticker = cube.transform.Find("Down Sticker").GetComponent<MeshRenderer>();
+    }
+
+    void SetCube()
+    {
+        //row = Rnd.Range(0, 10);
+        //col = Rnd.Range(0, 10);
+
+        row = 9;
+        col = 0;
+
+
+        topFace = grid[row, col];
+        frontFace = grid[(row + 1) % 10, col];
+        leftFace = grid[row, col - 1 < 0 ? 9 : col - 1];
+        backFace = grid[row - 1 < 0 ? 9 : row - 1, col];
+        rightFace = grid[row, (col + 1) % 10];
+        bottomFace = grid[(row + 2) % 10, col];
+
+        upSticker.material = colorDictionary[topFace];
+        leftSticker.material = colorDictionary[leftFace];
+        frontSticker.material = colorDictionary[frontFace];
+        rightSticker.material = colorDictionary[rightFace];
+        downSticker.material = colorDictionary[bottomFace];
+        backSticker.material = colorDictionary[backFace];
+
+        Logging($"Top color is {upSticker.material.name}");
+        Logging($"Left color is {leftSticker.material.name}");
+        Logging($"Front color is {frontSticker.material.name}");
+        Logging($"Right color is {rightSticker.material.name}");
+        Logging($"Down color is {downSticker.material.name}");
+        Logging($"Back color is {backSticker.material.name}");
+
+        Logging($"Top Face is located in {row},{col} (row, col) index 0");
+
+    }
+
+
+    void Logging(string log)
+    {
+        Debug.LogFormat($"[1x1x1 Rubik’s Cube #{ModuleId}] {log}");
     }
 
 #pragma warning disable 414
