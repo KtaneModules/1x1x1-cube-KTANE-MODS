@@ -14,7 +14,7 @@ public class Cube : MonoBehaviour
 
     private GameObject cube;
 
-    private KMSelectable upButton, leftButton, rightButton, downButton, clockButton, counterButton, startButton;
+    private KMSelectable upButton, leftButton, rightButton, downButton, clockButton, counterButton, startButton, resetButton;
 
     private const float maxTime = 10f;
     private float currentTime;
@@ -48,6 +48,7 @@ public class Cube : MonoBehaviour
 
     private List<string> answer;
     private List<string> inputList;
+    private List<Rotation> beforeStartInputList;
 
 
     static int ModuleIdCounter = 1;
@@ -56,11 +57,15 @@ public class Cube : MonoBehaviour
 
     private bool timerStarted = false;
 
+    bool disableButtons;
+
     private Quaternion currentRotation = Quaternion.identity;
+
+    private Dictionary<Rotation, Rotation> oppositeMoves;
 
 
     enum Rotation
-    { 
+    {
         Up,
         Left,
         Right,
@@ -72,7 +77,7 @@ public class Cube : MonoBehaviour
     {
         ModuleId = ModuleIdCounter++;
 
-        
+
 
 
         GetComponents();
@@ -102,23 +107,39 @@ public class Cube : MonoBehaviour
             [w] = whiteMaterial,
         };
 
-        upButton.OnInteract += delegate () { StartCoroutine(Rotate(Rotation.Up)); return false; };
-        downButton.OnInteract += delegate () {  StartCoroutine(Rotate(Rotation.Down)); return false; };
+        upButton.OnInteract += delegate () { if(!disableButtons) StartCoroutine(Rotate(Rotation.Up, .5f)); return false; };
+        downButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Down, .5f)); return false; };
 
-        leftButton.OnInteract += delegate () {  StartCoroutine(Rotate(Rotation.Left)); return false; };
-        rightButton.OnInteract += delegate () { StartCoroutine(Rotate(Rotation.Right)); return false; };
+        leftButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Left, .5f)); return false; };
+        rightButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Right, .5f)); return false; };
 
-        clockButton.OnInteract += delegate () { StartCoroutine(Rotate(Rotation.Clock)); return false; };
-        counterButton.OnInteract += delegate () { StartCoroutine(Rotate(Rotation.Counter)); return false; };
-        startButton.OnInteract += delegate () { timerStarted = true;  return false; };
+        clockButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Clock, .5f)); return false; };
+        counterButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Counter, .5f)); return false; };
+        resetButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(ResetButton()); return false; };
+
+        startButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(StartButton()); return false; };
+
+
+        oppositeMoves = new Dictionary<Rotation, Rotation>()
+        {
+            [Rotation.Up] = Rotation.Down,
+            [Rotation.Down] = Rotation.Up,
+            [Rotation.Left] = Rotation.Right,
+            [Rotation.Right] = Rotation.Left,
+            [Rotation.Counter] = Rotation.Clock,
+            [Rotation.Clock] = Rotation.Counter,
+        };
     }
 
     void Start()
     {
-        SetCube(); 
+        SetCube();
         GetEdgework();
         GetAnswer();
         ResetModule();
+
+        disableButtons = false;
+        beforeStartInputList = new List<Rotation>();
     }
 
     void ResetModule()
@@ -136,14 +157,13 @@ public class Cube : MonoBehaviour
     }
 
     void Solve()
-    { 
+    {
         GetComponent<KMBombModule>().HandlePass();
         timerText.text = "GG";
         timerStarted = false;
         ModuleSolved = true;
     }
 
-    
 
     void Update()
     {
@@ -161,16 +181,15 @@ public class Cube : MonoBehaviour
         }
     }
 
-    IEnumerator Rotate(Rotation rotation)
+    IEnumerator Rotate(Rotation rotation, float maxTime)
     {
+         //maxTime -  how much time the rotation should take 
         if (rotating || ModuleSolved)
             yield break;
 
         rotating = true;
 
-        const float maxTime = .5f; //how much time the rotation should take 
-
-        Vector3 axis; 
+        Vector3 axis;
         switch (rotation)
         {
             case Rotation.Up:
@@ -207,49 +226,57 @@ public class Cube : MonoBehaviour
         cube.transform.localRotation = currentRotation;
 
         if (timerStarted)
-        { 
+        {
             HandleInput(rotation);
+        }
+
+        else
+        {
+            beforeStartInputList.Add(rotation);
         }
 
         rotating = false;
     }
 
-    /// <summary>
-    /// helper method used to round each coponent to the nearest 90 degrees
-    /// </summary>
-    /// <returns></returns>
-    Vector3 FixRotation(Vector3 initialRotation)
+    IEnumerator ResetButton()
     {
-        return new Vector3(FixComponent(initialRotation.x), FixComponent(initialRotation.y), FixComponent(initialRotation.z));
-    }
+        disableButtons = true;
 
-    int FixComponent(float value)
-    {
-
-
-        List<KeyValuePair<int, float>> d = new List<KeyValuePair<int, float>>()
+        SimplifyInput();
+        for (int i = beforeStartInputList.Count - 1; i > -1 ; i--)
         {
-            new KeyValuePair<int, float>(0, Math.Abs(value - 0)),
-            new KeyValuePair<int, float>(90, Math.Abs(value - 90)),
-            new KeyValuePair<int, float>(180, Math.Abs(value - 180)),
-            new KeyValuePair<int, float>(270, Math.Abs(value - 270)),
-        };
+            Rotation input = beforeStartInputList[i];
 
-        int index = 0;
-        float smallest = d[0].Value;
-
-        for (int i = 1; i < 4; i++)
-        {
-            if (smallest > d[i].Value)
-            {
-                index = i;
-                smallest = d[i].Value;
-            }
+            yield return Rotate(oppositeMoves[input], .1f);
         }
 
+        beforeStartInputList.Clear();
+        disableButtons = false;
+    }
 
+    void SimplifyInput()
+    {
+        for (int i = beforeStartInputList.Count - 1; i - 1 > -1; i--)
+        {
+            Rotation m1 = beforeStartInputList[i];
+            Rotation m2 = beforeStartInputList[i - 1];
 
-        return d[index].Key;
+            Rotation oppositeM1 = oppositeMoves[m1];
+
+            if (m2 == oppositeM1)
+            {
+                beforeStartInputList.RemoveAt(beforeStartInputList.Count - 1);
+                beforeStartInputList.RemoveAt(beforeStartInputList.Count - 1);
+                i--;
+            }
+        }
+    }
+
+    IEnumerator StartButton()
+    {
+        yield return ResetButton();
+        timerStarted = true;
+
     }
 
     void HandleInput(Rotation rotation)
@@ -308,6 +335,7 @@ public class Cube : MonoBehaviour
         clockButton = transform.Find("Clock Button").GetComponent<KMSelectable>();
         counterButton = transform.Find("Counter Button").GetComponent<KMSelectable>();
         startButton = transform.Find("Start Button").GetComponent<KMSelectable>();
+        resetButton = transform.Find("Reset Button").GetComponent<KMSelectable>();
 
         timerText = transform.Find("Timer").transform.Find("Text").GetComponent<TextMesh>();
 
