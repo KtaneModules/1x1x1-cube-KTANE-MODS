@@ -204,6 +204,8 @@ public class Cube : MonoBehaviour
             yield return null;
         }
 
+        cube.transform.localRotation = toAngle;
+
         //cube.transform.eulerAngles = FixRotation(cube.transform.eulerAngles);
         //Debug.Log(cube.transform.eulerAngles);
 
