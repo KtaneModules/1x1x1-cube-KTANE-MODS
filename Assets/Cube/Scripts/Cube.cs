@@ -47,6 +47,8 @@ public class Cube : MonoBehaviour
     private string serialNumber;
 
     private List<string> answer;
+    private List<string> inputList;
+
 
     static int ModuleIdCounter = 1;
     int ModuleId;
@@ -99,14 +101,14 @@ public class Cube : MonoBehaviour
             [w] = whiteMaterial,
         };
 
-        upButton.OnInteract += delegate () { Debug.Log("Pressed up"); StartCoroutine(Rotate(Rotation.Up)); return false; };
-        downButton.OnInteract += delegate () { Debug.Log("Pressed up"); StartCoroutine(Rotate(Rotation.Down)); return false; };
+        upButton.OnInteract += delegate () { StartCoroutine(Rotate(Rotation.Up)); return false; };
+        downButton.OnInteract += delegate () {  StartCoroutine(Rotate(Rotation.Down)); return false; };
 
-        leftButton.OnInteract += delegate () { Debug.Log("Pressed left"); StartCoroutine(Rotate(Rotation.Left)); return false; };
-        rightButton.OnInteract += delegate () { Debug.Log("Pressed right"); StartCoroutine(Rotate(Rotation.Right)); return false; };
+        leftButton.OnInteract += delegate () {  StartCoroutine(Rotate(Rotation.Left)); return false; };
+        rightButton.OnInteract += delegate () { StartCoroutine(Rotate(Rotation.Right)); return false; };
 
-        clockButton.OnInteract += delegate () { Debug.Log("Pressed right"); StartCoroutine(Rotate(Rotation.Clock)); return false; };
-        counterButton.OnInteract += delegate () { Debug.Log("Pressed right"); StartCoroutine(Rotate(Rotation.Counter)); return false; };
+        clockButton.OnInteract += delegate () { StartCoroutine(Rotate(Rotation.Clock)); return false; };
+        counterButton.OnInteract += delegate () { StartCoroutine(Rotate(Rotation.Counter)); return false; };
         startButton.OnInteract += delegate () { timerStarted = true;  return false; };
     }
 
@@ -120,8 +122,27 @@ public class Cube : MonoBehaviour
 
     void ResetModule()
     {
+        timerStarted = false;
         currentTime = maxTime;
+        inputList = new List<string>();
+        timerText.text = currentTime.ToString("00.0");
     }
+
+    void Strike()
+    {
+        GetComponent<KMBombModule>().HandleStrike();
+        ResetModule();
+    }
+
+    void Solve()
+    { 
+        GetComponent<KMBombModule>().HandlePass();
+        timerText.text = "GG";
+        timerStarted = false;
+        ModuleSolved = true;
+    }
+
+    
 
     void Update()
     {
@@ -129,25 +150,24 @@ public class Cube : MonoBehaviour
         {
             currentTime -= Time.deltaTime;
 
-            Debug.Log(currentTime);
-
             timerText.text = currentTime.ToString("00.0");
 
             if (currentTime <= 0)
             {
                 timerStarted = false;
+                Strike();
             }
         }
     }
 
     IEnumerator Rotate(Rotation rotation)
     {
-        if (rotating)
+        if (rotating || ModuleSolved)
             yield break;
 
         rotating = true;
 
-        const float maxTime = 1f; //how much time the rotation should take 
+        const float maxTime = .5f; //how much time the rotation should take 
 
         Quaternion initialRotation = cube.transform.rotation;
         Vector3Int initialRotationVector = new Vector3Int((int)initialRotation.x, (int)initialRotation.y, (int)initialRotation.z);
@@ -194,8 +214,60 @@ public class Cube : MonoBehaviour
             timer += Time.deltaTime;
         } while (timer < maxTime);
 
-        rotating = false;
         cube.transform.eulerAngles = finalRotation;
+
+        if (timerStarted)
+        { 
+            HandleInput(rotation);
+        }
+
+        rotating = false;
+    }
+
+    void HandleInput(Rotation rotation)
+    {
+        string input;
+        string log = "";
+
+        switch (rotation)
+        {
+            case Rotation.Clock:
+                input = "C";
+                break;
+            case Rotation.Counter:
+                input = "CC";
+                break;
+            case Rotation.Up:
+                input = "U";
+                break;
+            case Rotation.Left:
+                input = "L";
+                break;
+            case Rotation.Right:
+                input = "R";
+                break;
+            default: //down
+                input = "D";
+                break;
+        }
+
+        inputList.Add(input);
+
+        string expected = answer[inputList.Count - 1];
+
+        if (input != expected)
+        {
+            log += $"Strike! You entered {string.Join(", ", inputList.ToArray())}";
+            Strike();
+        }
+
+        else if (inputList.Count == answer.Count)
+        {
+            log += " YOU BEAT THE WORLD RECORD!!!!";
+            Solve();
+        }
+
+        Logging(log);
     }
 
     void GetComponents()
