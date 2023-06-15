@@ -20,6 +20,8 @@ public class Cube : MonoBehaviour
     private float currentTime;
     private TextMesh timerText;
 
+    private TextMesh upColorBlind, leftColorBlind, frontColorBlind, rightColorBlind, backColorBlind, bottomColorBlind;
+
     private MeshRenderer upSticker, leftSticker, frontSticker, rightSticker, downSticker, backSticker;
 
     [SerializeField]
@@ -78,9 +80,6 @@ public class Cube : MonoBehaviour
     void Awake()
     {
         ModuleId = ModuleIdCounter++;
-
-
-
 
         GetComponents();
 
@@ -244,7 +243,6 @@ public class Cube : MonoBehaviour
     {
         disableButtons = true;
 
-        SimplifyInput();
         for (int i = beforeStartInputList.Count - 1; i > -1 ; i--)
         {
             Rotation input = beforeStartInputList[i];
@@ -254,36 +252,6 @@ public class Cube : MonoBehaviour
 
         beforeStartInputList.Clear();
         disableButtons = false;
-    }
-
-    void SimplifyInput()
-    {
-        int startCount;
-        int endCount;
-
-        do
-        {
-            startCount = beforeStartInputList.Count;
-
-            for (int i = beforeStartInputList.Count - 1; i - 1 > -1; i--)
-            {
-                Rotation m1 = beforeStartInputList[i];
-                Rotation m2 = beforeStartInputList[i - 1];
-
-                Rotation oppositeM1 = oppositeMoves[m1];
-
-                if (m2 == oppositeM1)
-                {
-                    beforeStartInputList.RemoveAt(beforeStartInputList.Count - 1);
-                    beforeStartInputList.RemoveAt(beforeStartInputList.Count - 1);
-                    i--;
-                }
-            }
-
-            endCount = beforeStartInputList.Count;
-
-        } while (startCount != endCount);
-        
     }
 
     IEnumerator StartButton()
@@ -359,7 +327,17 @@ public class Cube : MonoBehaviour
         rightSticker = cube.transform.Find("Right Sticker").GetComponent<MeshRenderer>();
         backSticker = cube.transform.Find("Back Sticker").GetComponent<MeshRenderer>();
         downSticker = cube.transform.Find("Down Sticker").GetComponent<MeshRenderer>();
+
+        upColorBlind = upSticker.transform.Find("Text").GetComponent<TextMesh>();
+        leftColorBlind = leftSticker.transform.Find("Text").GetComponent<TextMesh>();
+        frontColorBlind = frontSticker.transform.Find("Text").GetComponent<TextMesh>();
+        rightColorBlind = rightSticker.transform.Find("Text").GetComponent<TextMesh>();
+        backColorBlind = backSticker.transform.Find("Text").GetComponent<TextMesh>();
+        bottomColorBlind = downSticker.transform.Find("Text").GetComponent<TextMesh>();
     }
+
+
+
 
     void GetEdgework()
     {
@@ -399,7 +377,55 @@ public class Cube : MonoBehaviour
         downSticker.material = colorDictionary[bottomFace];
         backSticker.material = colorDictionary[backFace];
 
+        bool colorBlind = GetComponent<KMColorblindMode>().ColorblindModeActive;
+
+        Debug.Log("color blind " + colorBlind);
+
+        if (colorBlind)
+        {
+            UpdateColorBlindText(upSticker.material, upColorBlind);
+            UpdateColorBlindText(leftSticker.material, leftColorBlind);
+            UpdateColorBlindText(frontSticker.material, frontColorBlind);
+            UpdateColorBlindText(backSticker.material, backColorBlind);
+            UpdateColorBlindText(downSticker.material, bottomColorBlind);
+            UpdateColorBlindText(rightSticker.material, rightColorBlind);
+        }
+
+        else
+        {
+            upColorBlind.text = leftColorBlind.text = frontColorBlind.text = rightColorBlind.text = backColorBlind.text = bottomColorBlind.text = "";
+        }
+
         Logging($"Top Face is located in {row},{col} (row, col) index 0");
+    }
+
+    void UpdateColorBlindText(Material m, TextMesh t)
+    {
+        KeyValuePair<Color, string> kv = GetColorBlindVariables(m);
+
+        t.color = kv.Key;
+        t.text = kv.Value;
+    }
+
+    KeyValuePair<Color, string> GetColorBlindVariables (Material m)
+    {
+        Color c;
+
+        string material = m.name.Substring(0, m.name.Length - 21);
+        
+        if (material == "Red" || material == "Blue")
+        {
+            c = new Color(1, 1, 1);
+        }
+
+        else
+        { 
+            c = new Color(0, 0, 0);
+        }
+
+        string s = "" + material[0];
+
+        return new KeyValuePair<Color, string>(c, s);
     }
 
     void GetAnswer()
