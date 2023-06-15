@@ -77,6 +77,8 @@ public class Cube : MonoBehaviour
         Clock,
         Counter
     }
+
+    bool debug = false;
     void Awake()
     {
         ModuleId = ModuleIdCounter++;
@@ -108,17 +110,17 @@ public class Cube : MonoBehaviour
             [w] = whiteMaterial,
         };
 
-        upButton.OnInteract += delegate () { if(!disableButtons) StartCoroutine(Rotate(Rotation.Up, inputTime)); return false; };
-        downButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Down, inputTime)); return false; };
+        upButton.OnInteract += delegate () { upButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Up, inputTime)); return false; };
+        downButton.OnInteract += delegate () { downButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Down, inputTime)); return false; };
 
-        leftButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Left, inputTime)); return false; };
-        rightButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Right, inputTime)); return false; };
+        leftButton.OnInteract += delegate () { leftButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Left, inputTime)); return false; };
+        rightButton.OnInteract += delegate () { rightButton.AddInteractionPunch(1f);  if (!disableButtons) StartCoroutine(Rotate(Rotation.Right, inputTime)); return false; };
 
-        clockButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Clock, inputTime)); return false; };
-        counterButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Counter, inputTime)); return false; };
-        resetButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(ResetButton()); return false; };
+        clockButton.OnInteract += delegate () { clockButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Clock, inputTime)); return false; };
+        counterButton.OnInteract += delegate () { counterButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Counter, inputTime)); return false; };
+        resetButton.OnInteract += delegate () { resetButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(ResetButton()); return false; };
 
-        startButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(StartButton()); return false; };
+        startButton.OnInteract += delegate () { startButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(StartButton()); return false; };
 
 
         oppositeMoves = new Dictionary<Rotation, Rotation>()
@@ -153,6 +155,7 @@ public class Cube : MonoBehaviour
 
     void Strike()
     {
+        StartCoroutine(ResetButton());
         GetComponent<KMBombModule>().HandleStrike();
         ResetModule();
     }
@@ -354,13 +357,23 @@ public class Cube : MonoBehaviour
 
         digitsInSerialNum = serialNumber.Where(c => Char.IsDigit(c)).Count();
         lettersInSerialNum = serialNumber.Length - digitsInSerialNum;
-        constantsInSerialNum = serialNumber.Where(c => !IsVowel(c)).Count();
+        constantsInSerialNum = Bomb.GetSerialNumberLetters().Where(c => !IsVowel(c)).Count();
     }
 
     void SetCube()
     {
-        row = Rnd.Range(0, 10);
-        col = Rnd.Range(0, 10);
+        if (debug)
+        {
+            row = 2;
+            col = 9;
+        }
+
+        else
+        {
+            row = Rnd.Range(0, 10);
+            col = Rnd.Range(0, 10);
+        }
+     
 
         topFace = grid[row, col];
         frontFace = grid[(row + 1) % 10, col];
@@ -377,11 +390,7 @@ public class Cube : MonoBehaviour
         downSticker.material = colorDictionary[bottomFace];
         backSticker.material = colorDictionary[backFace];
 
-        bool colorBlind = GetComponent<KMColorblindMode>().ColorblindModeActive;
-
-        Debug.Log("color blind " + colorBlind);
-
-        if (colorBlind)
+        if (GetComponent<KMColorblindMode>().ColorblindModeActive)
         {
             UpdateColorBlindText(upSticker.material, upColorBlind);
             UpdateColorBlindText(leftSticker.material, leftColorBlind);
@@ -432,10 +441,20 @@ public class Cube : MonoBehaviour
     {
         List<int> nums = new List<int>();
 
-        foreach (char c in serialNumber)
+        for (int i = 0; i < 6; i++)
         {
-            nums.Add(Char.IsDigit(c) ? c - 48 : c - 64);        
+            char c = serialNumber[i];
+            int edgeworkNum = Char.IsDigit(c) ? c - 48 : c - 64;
+            int modifier = i / 3 == 0 ? row : col;
+            int sum = edgeworkNum + modifier;
+
+            nums.Add(sum);
         }
+
+        string[] arr = nums.Select(x => "" + x.ToString()).ToArray();
+
+        Logging($"Starting numbers {string.Join(", ", arr)}");
+
 
         nums[0] = GetTopNewNumber(nums[0]);
         nums[1] = GetLeftNewNumber(nums[1]);
@@ -443,7 +462,7 @@ public class Cube : MonoBehaviour
         nums[3] = GetRightNewNumber(nums[3]);
         nums[4] = GetBottomNewNumber(nums[4]);
 
-        string[] arr = nums.Select(x => "" + x.ToString()).ToArray();
+        arr = nums.Select(x => "" + x.ToString()).ToArray();
 
         Logging($"Modified numbers are {string.Join(", ", arr)}");
 
