@@ -24,6 +24,7 @@ public class Cube : MonoBehaviour
 
     [SerializeField]
     private Material redMaterial, orangeMaterial, yellowMaterial, greenMaterial, blueMaterial, whiteMaterial;
+
     private Color[,] grid;
 
     private Dictionary<Color, Material> colorDictionary;
@@ -63,6 +64,7 @@ public class Cube : MonoBehaviour
 
     private Dictionary<Rotation, Rotation> oppositeMoves;
 
+    const float inputTime = .5f; //the amount of time it takes for the cube to rotate when button is pressed 
 
     enum Rotation
     {
@@ -107,14 +109,14 @@ public class Cube : MonoBehaviour
             [w] = whiteMaterial,
         };
 
-        upButton.OnInteract += delegate () { if(!disableButtons) StartCoroutine(Rotate(Rotation.Up, .5f)); return false; };
-        downButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Down, .5f)); return false; };
+        upButton.OnInteract += delegate () { if(!disableButtons) StartCoroutine(Rotate(Rotation.Up, inputTime)); return false; };
+        downButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Down, inputTime)); return false; };
 
-        leftButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Left, .5f)); return false; };
-        rightButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Right, .5f)); return false; };
+        leftButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Left, inputTime)); return false; };
+        rightButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Right, inputTime)); return false; };
 
-        clockButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Clock, .5f)); return false; };
-        counterButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Counter, .5f)); return false; };
+        clockButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Clock, inputTime)); return false; };
+        counterButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(Rotate(Rotation.Counter, inputTime)); return false; };
         resetButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(ResetButton()); return false; };
 
         startButton.OnInteract += delegate () { if (!disableButtons) StartCoroutine(StartButton()); return false; };
@@ -256,20 +258,32 @@ public class Cube : MonoBehaviour
 
     void SimplifyInput()
     {
-        for (int i = beforeStartInputList.Count - 1; i - 1 > -1; i--)
+        int startCount;
+        int endCount;
+
+        do
         {
-            Rotation m1 = beforeStartInputList[i];
-            Rotation m2 = beforeStartInputList[i - 1];
+            startCount = beforeStartInputList.Count;
 
-            Rotation oppositeM1 = oppositeMoves[m1];
-
-            if (m2 == oppositeM1)
+            for (int i = beforeStartInputList.Count - 1; i - 1 > -1; i--)
             {
-                beforeStartInputList.RemoveAt(beforeStartInputList.Count - 1);
-                beforeStartInputList.RemoveAt(beforeStartInputList.Count - 1);
-                i--;
+                Rotation m1 = beforeStartInputList[i];
+                Rotation m2 = beforeStartInputList[i - 1];
+
+                Rotation oppositeM1 = oppositeMoves[m1];
+
+                if (m2 == oppositeM1)
+                {
+                    beforeStartInputList.RemoveAt(beforeStartInputList.Count - 1);
+                    beforeStartInputList.RemoveAt(beforeStartInputList.Count - 1);
+                    i--;
+                }
             }
-        }
+
+            endCount = beforeStartInputList.Count;
+
+        } while (startCount != endCount);
+        
     }
 
     IEnumerator StartButton()
@@ -697,16 +711,121 @@ public class Cube : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"Use !{0} to do something.";
+    private readonly string TwitchHelpMessage = @"Use `!{0}` followed by U, L, R, D, C, or CC to rotate the cube in their respective directions. Moves can be chained with a space between them. Prepend S to start the timer. Having the S anywhere besides the start will make the command invalid. Use `!{0} Reset` to press the reset button.";
 #pragma warning restore 414
 
     IEnumerator ProcessTwitchCommand(string Command)
     {
+        Command = Command.ToUpper().Trim();
         yield return null;
+
+        string[] commands = Command.Split(' ');
+
+        if (commands[0] == "RESET")
+        {
+            if (commands.Length == 1)
+            {
+                resetButton.OnInteract();
+            }
+
+            else
+            {
+                yield return "sendtochaterror Too many commands.";
+            }
+        }
+
+        else if (commands[0] == "S")
+        {
+            string[] moves = new string[commands.Length - 1];
+
+            for (int i = 0; i < moves.Length; i++)
+            {
+                moves[i] = commands[i + 1];
+            }
+
+            if (ValidCommand(moves))
+            {
+                yield return StartButton();
+                yield return HandleMoves(moves);
+            }
+
+            else
+            {
+                yield return "sendtochaterror Invalid move command.";
+                yield break;
+            }
+        }
+
+        else
+        {
+            if (ValidCommand(commands))
+            {
+                yield return HandleMoves(commands);
+            }
+
+            else
+            {
+                yield return "sendtochaterror Invalid move command.";
+            }
+        }
+
+        while (!ModuleSolved)
+        {
+            yield return null;
+        }
+
+
     }
 
     IEnumerator TwitchHandleForcedSolve()
     {
-        yield return null;
+        yield return ProcessTwitchCommand($"S {string.Join(" ", answer.ToArray())}");
+    }
+
+    IEnumerator HandleMoves(string[] moves)
+    {
+        int currentStrikeNum = Bomb.GetStrikes();
+
+        foreach (string m in moves)
+        {
+            switch (m)
+            {
+                case "U":
+                    yield return Rotate(Rotation.Up, inputTime);
+                    break;
+
+                case "L":
+                    yield return Rotate(Rotation.Left, inputTime);
+                    break;
+
+                case "R":
+                    yield return Rotate(Rotation.Right, inputTime);
+                    break;
+
+                case "D":
+                    yield return Rotate(Rotation.Down, inputTime);
+                    break;
+
+                case "C":
+                    yield return Rotate(Rotation.Clock, inputTime);
+                    break;
+
+                default: //CC
+                    yield return Rotate(Rotation.Counter, inputTime);
+                    break;
+            } 
+
+
+            if (Bomb.GetStrikes() > currentStrikeNum)
+            {
+                yield break;
+            }
+        }
+    }
+
+
+    bool ValidCommand(string[] s)
+    {
+        return s.Count(x => !new string[] { "U", "L", "R", "D", "C", "CC" }.Contains(x)) == 0;
     }
 }
