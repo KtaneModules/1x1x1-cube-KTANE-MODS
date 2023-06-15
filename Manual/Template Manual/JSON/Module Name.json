@@ -1,2 +1,22 @@
-Replace this with a JSON generated at ktane.timwi.de (see Tools -> Create new module)
-Don't forget to add Tags to the description that describe what your module LOOKS LIKE to be able to find it in the list from the defuser's description.
+{
+    "Compatibility": "Compatible",
+    "Contributors": {
+      "Developer": [ "Hawker" ],
+      "Idea": [ "TracksJosh" ],
+      "Manual": [
+        "Hawker",
+        "TracksJosh"
+      ]
+    },
+    "DefuserDifficulty": "Easy",
+    "Description": "Get the world record speed run for solving a rubik cube",
+    "ExpertDifficulty": "Easy",
+    "ModuleID": "1x1x1Rubik’sCube",
+    "Name": "1x1x1 Rubik’s Cube",
+    "Origin": "Mods",
+    "Published": "2023-06-15",
+    "SortKey": "1X1X1 RUBIK'S CUBE",
+    "SourceUrl": "https://github.com/KTANE-MODS/1x1x1-cube",
+    "SteamID": "2989573372",
+    "Type": "Regular"
+  }

@@ -8,11 +8,36 @@
     <link rel="stylesheet" type="text/css" href="css/normalize.css" />
     <link rel="stylesheet" type="text/css" href="css/main.css" />
     <script src="js/ktane-utils.js"></script>
+
+    <script>
+      let init = () => {
+        [].forEach.call(document.querySelectorAll(".red"), function (td) {
+          td.innerHTML = "R";
+        });
+        [].forEach.call(document.querySelectorAll(".orange"), function (td) {
+          td.innerHTML = "O";
+        });
+        [].forEach.call(document.querySelectorAll(".yellow"), function (td) {
+          td.innerHTML = "Y";
+        });
+        [].forEach.call(document.querySelectorAll(".green"), function (td) {
+          td.innerHTML = "G";
+        });
+        [].forEach.call(document.querySelectorAll(".blue"), function (td) {
+          td.innerHTML = "B";
+        });
+        [].forEach.call(document.querySelectorAll(".white"), function (td) {
+          td.innerHTML = "W";
+        });
+      };
+
+      window.onload = () => {
+        init();
+      };
+    </script>
     <style>
-      .dark table,
       table {
         margin: 1em auto;
-        border: none;
       }
 
       .page-footer::before {
@@ -46,9 +71,14 @@
       }
       .blue {
         background-color: blue;
+        color: #ddd;
       }
       .white {
         background-color: white;
+      }
+
+      .dark #color-table .red {
+        color: black;
       }
 
       .red,
@@ -72,7 +102,7 @@
           <span class="page-header-section-title">1x1x1 Rubik’s Cube </span>
         </div>
         <div class="page-content">
-          <img src="img/Component/Module Name.svg" class="diagram" />
+          <img src="img/Component/1x1x1 Rubik’s Cube.svg" class="diagram" />
           <h2>On the Subject of 1x1x1 Rubik’s Cube</h2>
           <p class="flavour-text">It’s already solved though.</p>
 
@@ -90,18 +120,13 @@
           </p>
 
           <p>
-            *The top face is considered the one that is seen first when the
-            module is initialized.
-          </p>
-
-          <p>
             <i
               >Note: The cube can be rotated before the start button is pressed.
               This will not change the initial answer.</i
             >
           </p>
 
-          <table>
+          <table id="color-table">
             <tr>
               <td class="green"></td>
               <td class="yellow"></td>
@@ -225,8 +250,15 @@
           </table>
           <p>
             Once you found your starting cell, use each character's numeric
-            position from the serial number (A=1, Z=26) to get 6 numbers.
+            position from the serial number (A=1, Z=26) to get 6 numbers Add the row of the starting cell to the first three number and the col to the second three**.
           </p>
+
+          <p>
+            *The top face is considered the one that is seen first when the
+            module is initialized.
+          </p>
+
+          <p>**Index starts at 0</p>
         </div>
         <div class="page-footer relative-footer">1</div>
       </div>
