@@ -3581,7 +3581,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1cfb889a07d5fd4e9baed7960bb397f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _colorblindMode: 1
+  _colorblindMode: 0
 --- !u!114 &114597681861087436
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3871,8 +3871,8 @@ MonoBehaviour:
   m_Script: {fileID: -119419473, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ModuleType: "1x1x1Rubik\u2019sCube"
-  ModuleDisplayName: "1x1x1 Rubik\u2019s Cube"
+  ModuleType: 1x1x1Rubik'sCube
+  ModuleDisplayName: 1x1x1 Rubik's Cube
   RequiresTimerVisibility: 0
 --- !u!114 &114997555465383440
 MonoBehaviour:
