@@ -14,4 +14,30 @@ MonoBehaviour:
   SerialNumberType: 0
   CustomSerialNumber: 
   TwoFactorResetTime: 30
-  Widgets: []
+  Widgets:
+  - Type: 1
+    Count: 1
+    PortPlateType: 0
+    DVIPort: 1
+    ParallelPort: 1
+    PS2Port: 1
+    RJ45Port: 1
+    SerialPort: 1
+    StereoRCAPort: 1
+    ComponentVideoPort: 0
+    CompositeVideoPort: 0
+    HDMIPort: 0
+    VGAPort: 0
+    USBPort: 0
+    ACPort: 0
+    PCMCIAPort: 0
+    CustomPorts: []
+    BatteryType: 1
+    BatteryCount: 0
+    MinBatteries: 0
+    MaxBatteries: 0
+    IndicatorLabel: 0
+    CustomLabel: 
+    IndicatorState: 0
+    CustomQueryKey: 
+    CustomData: 

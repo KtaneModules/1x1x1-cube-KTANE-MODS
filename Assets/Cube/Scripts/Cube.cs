@@ -560,38 +560,38 @@ public class Cube : MonoBehaviour
 
         if (leftFace == g)
         {
-            newNum = oldNum + Bomb.GetPorts().Where(x => x == "Stereo RCA").Count();
+            newNum = oldNum + Bomb.GetPorts().Count(x => x.ToUpper() == "STEREORCA");
             log += "green. Adding Stereo RCA ports.";
         }
 
         else if (leftFace == b)
         {
-            newNum = oldNum + Bomb.GetPorts().Where(x => x == "Serial").Count();
+            newNum = oldNum + Bomb.GetPorts().Count(x => x.ToUpper() == "SERIAL");
             log += "blue. Adding Serial ports.";
 
         }
 
         else if (leftFace == r)
         {
-            newNum = oldNum + Bomb.GetPorts().Where(x => x == "DVI-D").Count();
+            newNum = oldNum + Bomb.GetPorts().Count(x => x.ToUpper() == "DVI");
             log += "red. Adding DVI-D ports.";
         }
 
         else if (leftFace == w)
         {
-            newNum = oldNum + Bomb.GetPorts().Where(x => x == "PS/2").Count();
+            newNum = oldNum + Bomb.GetPorts().Count(x => x.ToUpper() == "PS2");
             log += "white. Adding PS/2 ports.";
         }
 
         else if (leftFace == y)
         {
-            newNum = oldNum + Bomb.GetPorts().Where(x => x == "Parallel").Count();
+            newNum = oldNum + Bomb.GetPorts().Count(x => x.ToUpper() == "PARALLEL");
             log += "yellow. Adding Parallel ports.";
         }
 
         else
         { 
-            newNum = oldNum + Bomb.GetPorts().Where(x => x == "RJ-45").Count();
+            newNum = oldNum + Bomb.GetPorts().Count(x => x.ToUpper() == "RJ45");
             log += "orange. Adding RJ-45 ports.";
         }
 
