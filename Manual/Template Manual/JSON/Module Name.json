@@ -11,12 +11,13 @@
     "DefuserDifficulty": "Easy",
     "Description": "Get the world record speed run for solving a rubik cube",
     "ExpertDifficulty": "Easy",
-    "ModuleID": "1x1x1Rubik’sCube",
-    "Name": "1x1x1 Rubik’s Cube",
+    "ModuleID": "1x1x1RubiksCube",
+    "Name": "1x1x1 Rubik's Cube",
     "Origin": "Mods",
     "Published": "2023-06-15",
-    "SortKey": "1X1X1 RUBIK'S CUBE",
+    "SortKey": "1X1X1RUBIKSCUBE",
     "SourceUrl": "https://github.com/KTANE-MODS/1x1x1-cube",
     "SteamID": "2989573372",
-    "Type": "Regular"
+    "Type": "Regular",
+    "Symbol": "1rqb"
   }

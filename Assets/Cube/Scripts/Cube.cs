@@ -752,7 +752,7 @@ public class Cube : MonoBehaviour
     }
     void Logging(string log)
     {
-        Debug.LogFormat($"[1x1x1 Rubik’s Cube #{ModuleId}] {log}");
+        Debug.LogFormat($"[1x1x1 Rubik's Cube #{ModuleId}] {log}");
     }
 
 #pragma warning disable 414
