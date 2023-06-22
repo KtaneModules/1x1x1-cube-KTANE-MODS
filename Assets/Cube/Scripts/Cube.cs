@@ -45,7 +45,7 @@ public class Cube : MonoBehaviour
 
     private Color topFace, leftFace, frontFace, rightFace, bottomFace, backFace;
 
-    private int aaBatteryCount, batteries, dBatteryCount, litIndicatorNum, unlitIndicatorNum, digitsInSerialNum, constantsInSerialNum, lettersInSerialNum, portPlates;
+    private int aaBatteryCount, batteryCount, holderCount, dBatteryCount, litIndicatorNum, unlitIndicatorNum, digitsInSerialNum, constantsInSerialNum, lettersInSerialNum, portPlates;
 
     private string serialNumber;
 
@@ -78,7 +78,7 @@ public class Cube : MonoBehaviour
         Counter
     }
 
-    bool debug = false;
+    bool debug = true;
     void Awake()
     {
         ModuleId = ModuleIdCounter++;
@@ -340,15 +340,14 @@ public class Cube : MonoBehaviour
     }
 
 
-
-
     void GetEdgework()
     {
         serialNumber = Bomb.GetSerialNumber().ToUpper();
 
-        batteries = Bomb.GetBatteryCount();
-        aaBatteryCount = GetAABatteryCount();
-        dBatteryCount = batteries - aaBatteryCount;
+        batteryCount = Bomb.GetBatteryCount();
+        holderCount = Bomb.GetBatteryHolderCount();
+        aaBatteryCount = 2 * (batteryCount - holderCount);
+        dBatteryCount = 2 * holderCount - batteryCount;
 
         litIndicatorNum = Bomb.GetOnIndicators().Count();
         unlitIndicatorNum = Bomb.GetOffIndicators().Count();
@@ -364,8 +363,8 @@ public class Cube : MonoBehaviour
     {
         if (debug)
         {
-            row = 2;
-            col = 9;
+            row = 6;
+            col = 4;
         }
 
         else
@@ -527,7 +526,7 @@ public class Cube : MonoBehaviour
 
         else if(topFace == r)
         {
-            newNum = oldNum + batteries;
+            newNum = oldNum + batteryCount;
             log += "red. Adding battery count.";
         }
 
@@ -545,7 +544,7 @@ public class Cube : MonoBehaviour
 
         else
         {
-            newNum = oldNum - batteries;
+            newNum = oldNum - batteryCount;
             log += "oranage. Subtracting battery count.";
         }
 
@@ -730,20 +729,6 @@ public class Cube : MonoBehaviour
 
         Logging(log);
         return newNum;
-    }
-
-    int GetAABatteryCount()
-    {
-        int count = 0;
-        int tempBatteries = batteries;
-
-        while (tempBatteries > 2)
-        {
-            tempBatteries -= 2;
-            count++;
-        }
-
-        return count * 2;
     }
 
     bool IsVowel(char c)
