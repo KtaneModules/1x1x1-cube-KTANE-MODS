@@ -624,7 +624,7 @@ public class Cube : MonoBehaviour
         else if (frontFace == w)
         {
             newNum = oldNum + unlitIndicatorNum;
-            log += "white. Subtracting unlit indicators.";
+            log += "white. Adding unlit indicators.";
         }
 
         else if (frontFace == y)
