@@ -611,8 +611,8 @@ public class Cube : MonoBehaviour
 
         else if (frontFace == b)
         {
-            newNum = oldNum + unlitIndicatorNum;
-            log += "blue. Adding unlit indicators.";
+            newNum = oldNum - unlitIndicatorNum;
+            log += "blue. Subtracting unlit indicators.";
         }
 
         else if (frontFace == r)
@@ -657,12 +657,12 @@ public class Cube : MonoBehaviour
         else if (rightFace == b)
         {
             newNum = oldNum + constantsInSerialNum;
-            log += "blue. Adding constants in serial number.";
+            log += "blue. Adding consonants in serial number.";
         }
 
         else if (rightFace == r)
         {
-            newNum = lettersInSerialNum;
+            newNum = oldNum + lettersInSerialNum;
             log += "red. Adding letters in serial number.";
         }
 
@@ -680,7 +680,7 @@ public class Cube : MonoBehaviour
 
         else
         { 
-            newNum = lettersInSerialNum - constantsInSerialNum;
+            newNum = oldNum + (lettersInSerialNum - constantsInSerialNum);
             log += "orange. Adding vowels in serial number.";
         }
 
