@@ -351,7 +351,7 @@ public class Cube : MonoBehaviour
 
         litIndicatorNum = Bomb.GetOnIndicators().Count();
         unlitIndicatorNum = Bomb.GetOffIndicators().Count();
-
+         
         portPlates = Bomb.GetPortPlateCount();
 
         digitsInSerialNum = serialNumber.Where(c => Char.IsDigit(c)).Count();
@@ -363,8 +363,8 @@ public class Cube : MonoBehaviour
     {
         if (debug)
         {
-            row = 6;
-            col = 4;
+            row = 2;
+            col = 0;
         }
 
         else
@@ -705,8 +705,8 @@ public class Cube : MonoBehaviour
 
         else if(bottomFace == r)
         {
-            newNum = oldNum - portPlates;
-            log += "red. Subtracting port plates.";
+            newNum = oldNum + portPlates;
+            log += "red. Adding port plates.";
         }
 
         else if(bottomFace == w)
