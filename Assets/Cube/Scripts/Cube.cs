@@ -78,7 +78,7 @@ public class Cube : MonoBehaviour
         Counter
     }
 
-    bool debug = false;
+    bool debug = true;
     void Awake()
     {
         ModuleId = ModuleIdCounter++;
@@ -363,8 +363,8 @@ public class Cube : MonoBehaviour
     {
         if (debug)
         {
-            row = 2;
-            col = 0;
+            row = 3;
+            col = 1;
         }
 
         else
@@ -668,8 +668,8 @@ public class Cube : MonoBehaviour
 
         else if (rightFace == w)
         {
-            newNum = oldNum - digitsInSerialNum;
-            log += "white. Subtracting digits in serial number.";
+            newNum = oldNum - lettersInSerialNum;
+            log += "white. Subtracting letters in serial number.";
         }
 
         else if (rightFace == y)
