@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: WorkshopItem
   m_EditorClassIdentifier: 
   WorkshopPublishedFileID: 2989573372
-  Title: "1x1x1 Rubik\u2019s Cube"
+  Title: 1x1x1 Rubik's Cube
   Tags:
   - Regular Module
