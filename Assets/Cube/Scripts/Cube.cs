@@ -110,15 +110,15 @@ public class Cube : MonoBehaviour
             [w] = whiteMaterial,
         };
 
-        upButton.OnInteract += delegate () { upButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Up, inputTime)); return false; };
-        downButton.OnInteract += delegate () { downButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Down, inputTime)); return false; };
+        upButton.OnInteract += delegate () { upButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Up, inputTime, false)); return false; };
+        downButton.OnInteract += delegate () { downButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Down, inputTime, false)); return false; };
 
-        leftButton.OnInteract += delegate () { leftButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Left, inputTime)); return false; };
-        rightButton.OnInteract += delegate () { rightButton.AddInteractionPunch(1f);  if (!disableButtons) StartCoroutine(Rotate(Rotation.Right, inputTime)); return false; };
+        leftButton.OnInteract += delegate () { leftButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Left, inputTime, false)); return false; };
+        rightButton.OnInteract += delegate () { rightButton.AddInteractionPunch(1f);  if (!disableButtons) StartCoroutine(Rotate(Rotation.Right, inputTime, false)); return false; };
 
-        clockButton.OnInteract += delegate () { clockButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Clock, inputTime)); return false; };
-        counterButton.OnInteract += delegate () { counterButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Counter, inputTime)); return false; };
-        resetButton.OnInteract += delegate () { resetButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(ResetButton()); return false; };
+        clockButton.OnInteract += delegate () { clockButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Clock, inputTime, false)); return false; };
+        counterButton.OnInteract += delegate () { counterButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Counter, inputTime, false)); return false; };
+        resetButton.OnInteract += delegate () { resetButton.AddInteractionPunch(1f); if (!disableButtons && !rotating) StartCoroutine(ResetButton()); return false; };
 
         startButton.OnInteract += delegate () { startButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(StartButton()); return false; };
 
@@ -185,7 +185,7 @@ public class Cube : MonoBehaviour
         }
     }
 
-    IEnumerator Rotate(Rotation rotation, float maxTime)
+    IEnumerator Rotate(Rotation rotation, float maxTime, bool resetting)
     {
          //maxTime -  how much time the rotation should take 
         if (rotating || ModuleSolved)
@@ -234,7 +234,7 @@ public class Cube : MonoBehaviour
             HandleInput(rotation);
         }
 
-        else
+        else if (!resetting)
         {
             beforeStartInputList.Add(rotation);
         }
@@ -250,7 +250,7 @@ public class Cube : MonoBehaviour
         {
             Rotation input = beforeStartInputList[i];
 
-            yield return Rotate(oppositeMoves[input], .1f);
+            yield return Rotate(oppositeMoves[input], .1f, true);
         }
 
         beforeStartInputList.Clear();
@@ -798,13 +798,6 @@ public class Cube : MonoBehaviour
                 yield return "sendtochaterror Invalid move command.";
             }
         }
-
-        while (!ModuleSolved)
-        {
-            yield return null;
-        }
-
-
     }
 
     IEnumerator TwitchHandleForcedSolve()
@@ -821,27 +814,27 @@ public class Cube : MonoBehaviour
             switch (m)
             {
                 case "U":
-                    yield return Rotate(Rotation.Up, inputTime);
+                    yield return Rotate(Rotation.Up, inputTime, false);
                     break;
 
                 case "L":
-                    yield return Rotate(Rotation.Left, inputTime);
+                    yield return Rotate(Rotation.Left, inputTime, false);
                     break;
 
                 case "R":
-                    yield return Rotate(Rotation.Right, inputTime);
+                    yield return Rotate(Rotation.Right, inputTime, false);
                     break;
 
                 case "D":
-                    yield return Rotate(Rotation.Down, inputTime);
+                    yield return Rotate(Rotation.Down, inputTime, false);
                     break;
 
                 case "C":
-                    yield return Rotate(Rotation.Clock, inputTime);
+                    yield return Rotate(Rotation.Clock, inputTime, false);
                     break;
 
                 default: //CC
-                    yield return Rotate(Rotation.Counter, inputTime);
+                    yield return Rotate(Rotation.Counter, inputTime, false);
                     break;
             } 
 
