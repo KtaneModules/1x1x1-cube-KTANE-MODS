@@ -78,7 +78,7 @@ public class Cube : MonoBehaviour
         Counter
     }
 
-    bool debug = true;
+    bool debug = false;
     void Awake()
     {
         ModuleId = ModuleIdCounter++;
