@@ -52,6 +52,7 @@ public class Cube : MonoBehaviour
     private List<string> answer;
     private List<string> inputList;
     private List<Rotation> beforeStartInputList;
+    private List <Rotation> afterStartInputList;
 
 
     static int ModuleIdCounter = 1;
@@ -118,7 +119,7 @@ public class Cube : MonoBehaviour
 
         clockButton.OnInteract += delegate () { clockButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Clock, inputTime, false)); return false; };
         counterButton.OnInteract += delegate () { counterButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(Rotate(Rotation.Counter, inputTime, false)); return false; };
-        resetButton.OnInteract += delegate () { resetButton.AddInteractionPunch(1f); if (!disableButtons && !rotating) StartCoroutine(ResetButton()); return false; };
+        resetButton.OnInteract += delegate () { resetButton.AddInteractionPunch(1f); if (!disableButtons && !rotating && !timerStarted) StartCoroutine(ResetButton(true)); return false; };
 
         startButton.OnInteract += delegate () { startButton.AddInteractionPunch(1f); if (!disableButtons) StartCoroutine(StartButton()); return false; };
 
@@ -143,6 +144,7 @@ public class Cube : MonoBehaviour
 
         disableButtons = false;
         beforeStartInputList = new List<Rotation>();
+        afterStartInputList = new List<Rotation>();
     }
 
     void ResetModule()
@@ -155,7 +157,7 @@ public class Cube : MonoBehaviour
 
     void Strike()
     {
-        StartCoroutine(ResetButton());
+        StartCoroutine(ResetButton(false));
         GetComponent<KMBombModule>().HandleStrike();
         ResetModule();
     }
@@ -232,6 +234,7 @@ public class Cube : MonoBehaviour
         if (timerStarted)
         {
             HandleInput(rotation);
+            afterStartInputList.Add(rotation);
         }
 
         else if (!resetting)
@@ -242,24 +245,27 @@ public class Cube : MonoBehaviour
         rotating = false;
     }
 
-    IEnumerator ResetButton()
+    IEnumerator ResetButton(bool beforeStart)
     {
         disableButtons = true;
 
-        for (int i = beforeStartInputList.Count - 1; i > -1 ; i--)
+        List<Rotation> list = beforeStart ? beforeStartInputList.Select(x => x).ToList() : afterStartInputList.Select(x => x).ToList();
+
+        for (int i = list.Count - 1; i > -1 ; i--)
         {
-            Rotation input = beforeStartInputList[i];
+            Rotation input = list[i];
 
             yield return Rotate(oppositeMoves[input], .1f, true);
         }
 
         beforeStartInputList.Clear();
+        afterStartInputList.Clear();
         disableButtons = false;
     }
 
     IEnumerator StartButton()
     {
-        yield return ResetButton();
+        yield return ResetButton(true);
         timerStarted = true;
 
     }
@@ -363,8 +369,8 @@ public class Cube : MonoBehaviour
     {
         if (debug)
         {
-            row = 3;
-            col = 1;
+            row = 6;
+            col = 9;
         }
 
         else
