@@ -247,6 +247,7 @@ public class Cube : MonoBehaviour
 
     IEnumerator ResetButton(bool beforeStart)
     {
+        while (!beforeStart && rotating) yield return null;
         disableButtons = true;
 
         List<Rotation> list = beforeStart ? beforeStartInputList.Select(x => x).ToList() : afterStartInputList.Select(x => x).ToList();
